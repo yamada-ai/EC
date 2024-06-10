@@ -1,0 +1,337 @@
+openapi: 3.0.0
+info:
+  title: E-commerce API
+  description: API documentation for E-commerce application
+  version: 1.0.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        zipcode:
+          type: string
+        address:
+          type: string
+        telephone:
+          type: string
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price_m:
+          type: integer
+        price_l:
+          type: integer
+        image_path:
+          type: string
+        deleted:
+          type: boolean
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        status:
+          type: string
+        total_price:
+          type: integer
+        order_date:
+          type: string
+        address_id:
+          type: integer
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        order_id:
+          type: integer
+        item_id:
+          type: integer
+        quantity:
+          type: integer
+        size:
+          type: string
+        toppings:
+          type: array
+          items:
+            type: integer
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        zipcode:
+          type: string
+        prefecture:
+          type: string
+        address:
+          type: string
+        telephone:
+          type: string
+security:
+  - bearerAuth: []
+paths:
+  /user/registration:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Invalid input
+        '409':
+          description: Email already exists
+  /auth/login:
+    post:
+      summary: Log in a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Authentication failed
+  /auth/logout:
+    post:
+      summary: Log out a user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+  /items/all:
+    get:
+      summary: Retrieve all items
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+  /items/{itemId}:
+    get:
+      summary: Retrieve item details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          schema:
+            type: integer
+          required: true
+          description: ID of the item to retrieve
+      responses:
+        '200':
+          description: Item details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '404':
+          description: Item not found
+  /orders/create:
+    post:
+      summary: Create a new order
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address_id:
+                  type: integer
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OrderItem'
+      responses:
+        '201':
+          description: Order created successfully
+        '400':
+          description: Invalid input
+  /orders/history:
+    get:
+      summary: Retrieve order history
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '404':
+          description: Orders not found
+  /orders/{orderId}:
+    get:
+      summary: Retrieve order details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orderId
+          schema:
+            type: integer
+          required: true
+          description: ID of the order to retrieve
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
+  /cart/items:
+    get:
+      summary: Retrieve shopping cart items
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of cart items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderItem'
+  /cart/add:
+    post:
+      summary: Add an item to the cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_id:
+                  type: integer
+                quantity:
+                  type: integer
+                size:
+                  type: string
+                toppings:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '201':
+          description: Item added to cart successfully
+        '400':
+          description: Invalid input
+  /cart/remove:
+    delete:
+      summary: Remove an item from the cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item_id:
+                  type: integer
+      responses:
+        '200':
+          description: Item removed from cart successfully
+        '404':
+          description: Item not found in cart
+  /addresses/add:
+    post:
+      summary: Add a new address
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      responses:
+        '201':
+          description: Address added successfully
+        '400':
+          description: Invalid input
+  /addresses/list:
+    get:
+      summary: Retrieve user addresses
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Address'
+        '404':
+          description: Addresses not found
