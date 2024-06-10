@@ -212,18 +212,22 @@ CREATE TABLE Address (
   - /user
   - POST
     - /login
+      - ログインする
     - /logout
+      - ログアウトする
 
-- ShowItemsController
+- ItemController
   - /item
   - GET
     - /all
-      - 全
-    - /one
-      - 1つの 
+      - 全ての商品を取得する
+    - /detail
+      - 商品詳細を取得する
+  
+  - OrderControler
+    - /order
+    - GET
 
-
-- ShowItemDetailController
 
 ## Domain
 - 
