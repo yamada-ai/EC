@@ -388,10 +388,10 @@ public class FavoriteSetComparison {
 | Path | Method | Summary | Request Body | Response |
 |------|--------|---------|--------------|----------|
 | /users | POST | Create a new user | [User](#user) | 201: [User](#user) |
-| /users/login | POST | Login a user | [LoginRequest](#loginrequest) | 200: [LoginResponse](#loginresponse) |
-| /users/logout | POST | Logout a user | - | 200: User logged out |
 | /users/{userId} | GET | Get user information | - | 200: [User](#user) |
 | /users/{userId} | PUT | Update user information | [User](#user) | 200: [User](#user) |
+| /auth/login | POST | Login a user | [LoginRequest](#loginrequest) | 200: [LoginResponse](#loginresponse) |
+| /auth/logout | POST | Logout a user | - | 200: User logged out |
 | /items | GET | Get list of items | - | 200: Array of [Item](#item) |
 | /items/{itemType} | GET | Get item details | - | 200: Array of [Item](#item) |
 | /items/{itemType}/{itemId} | GET | Get item details | - | 200: [Item](#item) |
@@ -578,33 +578,154 @@ public class FavoriteSetComparison {
 
 
 ## Controller
-- UserRegistrationController
-  - /user
-  - POST
-    - /registration
-      - ユーザを登録する
-      - UserRegistrationForm
 
-- LoginController
-  - /user
-  - POST
-    - /login
-      - ログインする
-    - /logout
-      - ログアウトする
+### UserController
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
 
-- ItemController
-  - /item
-  - GET
-    - /all
-      - 全ての商品を取得する
-    - /detail
-      - 商品詳細を取得する
-  
-  - OrderControler
-    - /order
-    - GET
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        User createdUser = userService.registerUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    }
+}
+
+```
+
+### AuthController
+```java
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        String token = authService.login(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(new LoginResponse(token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
+        authService.logout(token);
+        return ResponseEntity.ok().build();
+    }
+}
+```
+
+### ItemController
+```java
+@RestController
+@RequestMapping("/items")
+public class ItemController {
+
+    @Autowired
+    private ItemService itemService;
+
+    @GetMapping
+    public ResponseEntity<List<Item>> getAllItems() {
+        List<Item> items = itemService.getAllItems();
+        return ResponseEntity.ok(items);
+    }
+
+    @GetMapping("/{itemType}")
+    public ResponseEntity<List<Item>> getItemsByType(@PathVariable String itemType) {
+        List<Item> items = itemService.getItemsByType(itemType);
+        return ResponseEntity.ok(items);
+    }
+}
+
+```
+
+### ItemDetailController
+```java
+@RestController
+@RequestMapping("/items")
+public class ItemDetailController {
+
+    @Autowired
+    private ItemDetailService itemDetailService;
+
+    @GetMapping("/{itemType}/{itemId}")
+    public ResponseEntity<Item> getItemDetail(@PathVariable String itemType, @PathVariable Integer itemId) {
+        Item item = itemDetailService.getItemDetail(itemType, itemId);
+        return ResponseEntity.ok(item);
+    }
+}
+
+```
 
 
-## Domain
-- 
+### CartController.
+```java
+@RestController
+@RequestMapping("/cart")
+public class CartController {
+
+    @Autowired
+    private CartService cartService;
+
+    @PostMapping
+    public ResponseEntity<Void> addItemToCart(@RequestBody CartItemRequest request) {
+        cartService.addItemToCart(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> removeItemFromCart(@PathVariable Integer itemId) {
+        cartService.removeItemFromCart(itemId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CartItem>> getCartItems() {
+        List<CartItem> items = cartService.getCartItems();
+        return ResponseEntity.ok(items);
+    }
+}
+
+
+```
+
+### OrderController.
+
+```java
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+     @PostMapping
+    public ResponseEntity<Order> placeOrder(@RequestBody OrderRequest request) {
+        Order order = orderService.placeOrder(request);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
+    }
+}
+
+```
+
+### OrderHistoryController
+```java
+@RestController
+@RequestMapping("/orders")
+public class OrderHistoryController {
+
+    @Autowired
+    private OrderHistoryService orderHistoryService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable Integer userId) {
+        List<Order> orders = orderHistoryService.getOrderHistory(userId);
+        return ResponseEntity.ok(orders);
+    }
+}
+```
