@@ -629,33 +629,25 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
+    // この型では上手く返せない
     @GetMapping
     public ResponseEntity<List<Item>> getAllItems() {
         List<Item> items = itemService.getAllItems();
         return ResponseEntity.ok(items);
     }
 
+    // タイプを指定して全商品を取得する
+    // Set かそれ以外かで型が異なるのが辛いのでどう対処すべきか
     @GetMapping("/{itemType}")
     public ResponseEntity<List<Item>> getItemsByType(@PathVariable String itemType) {
         List<Item> items = itemService.getItemsByType(itemType);
         return ResponseEntity.ok(items);
     }
-}
 
-```
-
-### ItemDetailController
-```java
-@RestController
-@RequestMapping("/items")
-public class ItemDetailController {
-
-    @Autowired
-    private ItemDetailService itemDetailService;
-
+    // タイプとid を指定して詳細を取得する
     @GetMapping("/{itemType}/{itemId}")
     public ResponseEntity<Item> getItemDetail(@PathVariable String itemType, @PathVariable Integer itemId) {
-        Item item = itemDetailService.getItemDetail(itemType, itemId);
+        Item item = itemService.getItemDetail(itemType, itemId);
         return ResponseEntity.ok(item);
     }
 }
@@ -704,28 +696,19 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-     @PostMapping
+    // このorderの作り方がいまいち納得いかない
+    @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody OrderRequest request) {
         Order order = orderService.placeOrder(request);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
-}
 
-```
-
-### OrderHistoryController
-```java
-@RestController
-@RequestMapping("/orders")
-public class OrderHistoryController {
-
-    @Autowired
-    private OrderHistoryService orderHistoryService;
-
-    @GetMapping("/{userId}")
+    // 注文履歴を取得する
+    @GetMapping("/history/{userId}")
     public ResponseEntity<List<Order>> getOrderHistory(@PathVariable Integer userId) {
-        List<Order> orders = orderHistoryService.getOrderHistory(userId);
+        List<Order> orders = orderService.getOrderHistory(userId);
         return ResponseEntity.ok(orders);
     }
 }
+
 ```
