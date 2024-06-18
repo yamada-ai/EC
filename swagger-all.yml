@@ -46,6 +46,46 @@ paths:
         '200':
           description: User logged out
 
+  /users/{userId}:
+    get:
+      summary: Get user information
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Update user information
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
   /items:
     get:
       summary: Get list of items
@@ -103,6 +143,229 @@ paths:
               schema:
                 $ref: '#/components/schemas/ItemDetailResponse'
 
+  /inventory:
+    get:
+      summary: Get inventory list
+      responses:
+        '200':
+          description: List of inventory
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Inventory'
+
+  /inventory/{itemId}/{itemType}:
+    get:
+      summary: Get inventory for a specific item
+      parameters:
+        - in: path
+          name: itemId
+          schema:
+            type: integer
+          required: true
+          description: Item ID
+        - in: path
+          name: itemType
+          schema:
+            type: string
+          required: true
+          description: Item type (top, bottom, set)
+      responses:
+        '200':
+          description: Inventory details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inventory'
+
+  /orders:
+    post:
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/{userId}:
+    get:
+      summary: Get order history for a user
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: List of orders retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /orders/{orderId}/status:
+    put:
+      summary: Update order status
+      parameters:
+        - in: path
+          name: orderId
+          schema:
+            type: integer
+          required: true
+          description: Order ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusUpdate'
+      responses:
+        '200':
+          description: Order status updated
+
+  /payment-methods:
+    get:
+      summary: Get list of payment methods
+      responses:
+        '200':
+          description: List of payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+
+  /payment-methods/{paymentMethodId}:
+    put:
+      summary: Update a payment method
+      parameters:
+        - in: path
+          name: paymentMethodId
+          schema:
+            type: integer
+          required: true
+          description: Payment method ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethod'
+      responses:
+        '200':
+          description: Payment method updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethod'
+
+  /scenarios:
+    get:
+      summary: Get list of scenarios
+      responses:
+        '200':
+          description: List of scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComparisonScenario'
+
+
+  /scenarios/{scenarioId}:
+    put:
+      summary: Update a scenario
+      parameters:
+        - in: path
+          name: scenarioId
+          schema:
+            type: integer
+          required: true
+          description: Scenario ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComparisonScenario'
+      responses:
+        '200':
+          description: Scenario updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonScenario'
+
+  /favorites:
+    post:
+      summary: Register a favorite set
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteSet'
+      responses:
+        '201':
+          description: Favorite set registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteSet'
+
+  /favorites/{userId}:
+    get:
+      summary: Get favorite sets for a user
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+          description: User ID
+      responses:
+        '200':
+          description: List of favorite sets retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavoriteSet'
+
+  /favorites/comparison:
+    post:
+      summary: Register a favorite set comparison result
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteSetComparison'
+      responses:
+        '201':
+          description: Favorite set comparison result registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteSetComparison'
+
 components:
   schemas:
     User:
@@ -119,8 +382,6 @@ components:
         zipcode:
           type: string
         prefecture:
-          type: string
-        municipalities:
           type: string
         address:
           type: string
