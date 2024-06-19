@@ -5,44 +5,46 @@
 
 ## User Table
 ```sql
-CREATE TABLE User (
+CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
-    address VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
     telephone VARCHAR(20) NOT NULL
 );
 ```
 
 ## OrderStatus Table
 ```sql
-CREATE TABLE OrderStatus (
+CREATE TABLE OrderStatuses (
     id SERIAL PRIMARY KEY,
     status_name VARCHAR(50) NOT NULL UNIQUE
 );
 ```
 
-## Order Table
+## Orders Table
 ```sql
-CREATE TABLE "Order" (
+
+CREATE TABLE Orders (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES "User"(id),
-    status_id INTEGER NOT NULL REFERENCES OrderStatus(id),
+    user_id INTEGER NOT NULL REFERENCES Users(id),
+    status_id INTEGER NOT NULL REFERENCES OrderStatuses(id),
     total_price INTEGER NOT NULL CHECK (total_price >= 0),
     order_date TIMESTAMP NOT NULL,
-    payment_method_id INTEGER NOT NULL REFERENCES PaymentMethod(id),
+    payment_method_id INTEGER NOT NULL REFERENCES PaymentMethods(id),
     delivery_date DATE NOT NULL,
-    address_id INTEGER NOT NULL REFERENCES Address(id)
+    address_id INTEGER NOT NULL REFERENCES Addresses(id)
 );
+
 ```
 
-## OrderItem Table
+## OrderItems Table
 ```sql
-CREATE TABLE OrderItem (
+CREATE TABLE OrderItems (
     id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL REFERENCES "Order"(id),
+    order_id INTEGER NOT NULL REFERENCES Orders(id),
     item_id INTEGER NOT NULL,
     item_type VARCHAR(50) NOT NULL CHECK (item_type IN ('top', 'bottom', 'set')),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
@@ -50,42 +52,61 @@ CREATE TABLE OrderItem (
 );
 ```
 
-## TopItem Table
+## Tops Table
 ```sql
-CREATE TABLE TopItem (
+CREATE TABLE Tops (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     price INTEGER NOT NULL CHECK (price >= 0),
-    image_path VARCHAR(255),
-    deleted BOOLEAN NOT NULL DEFAULT FALSE
+    image_path TEXT
 );
 ```
 
-## BottomItem Table
+## Bottoms Table
 ```sql
-CREATE TABLE BottomItem (
+CREATE TABLE Bottoms (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
     price INTEGER NOT NULL CHECK (price >= 0),
-    image_path VARCHAR(255),
-    deleted BOOLEAN NOT NULL DEFAULT FALSE
+    image_path TEXT
+);
+
+```
+
+## Sets Table
+```sql
+CREATE TABLE Sets (
+    id SERIAL PRIMARY KEY,
+    top_id INTEGER NOT NULL REFERENCES Tops(id) ON DELETE CASCADE,
+    bottom_id INTEGER NOT NULL REFERENCES Bottoms(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    price INTEGER NOT NULL CHECK (price >= 0),
+    image_path TEXT
 );
 ```
 
-## Set Table
+## Address Table
 ```sql
-CREATE TABLE Set (
+CREATE TABLE Addresses (
     id SERIAL PRIMARY KEY,
-    top_item_id INTEGER NOT NULL REFERENCES TopItem(id),
-    bottom_item_id INTEGER NOT NULL REFERENCES BottomItem(id),
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price INTEGER NOT NULL CHECK (price >= 0),
-    image_path VARCHAR(255)
+    user_id INTEGER NOT NULL REFERENCES Users(id),
+    zipcode VARCHAR(20) NOT NULL,
+    address TEXT NOT NULL,
+    telephone VARCHAR(20) NOT NULL
 );
 ```
+
+## PaymentMethod Table
+```sql
+CREATE TABLE PaymentMethods (
+    id SERIAL PRIMARY KEY,
+    method_name VARCHAR(50) NOT NULL UNIQUE
+);
+```
+
 
 ## Inventory Table
 ```sql
@@ -118,9 +139,9 @@ CREATE TABLE FavoriteSet (
 ```sql
 CREATE TABLE ComparisonScenario (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name TEXT NOT NULL,
     description TEXT,
-    image_path VARCHAR(255),
+    image_path TEXT,
     time_of_day VARCHAR(50) NOT NULL CHECK (time_of_day IN ('day', 'night')),
     weather VARCHAR(50) NOT NULL CHECK (weather IN ('sunny', 'rainy')),
     location VARCHAR(50) NOT NULL CHECK (location IN ('office', 'outdoor'))
@@ -137,60 +158,34 @@ CREATE TABLE FavoriteSetComparison (
 );
 ```
 
-## Address Table
-```sql
-CREATE TABLE Address (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES "User"(id),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    zipcode VARCHAR(20) NOT NULL,
-    prefecture VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    telephone VARCHAR(20) NOT NULL
-);
-```
-
-## PaymentMethod Table
-```sql
-CREATE TABLE PaymentMethod (
-    id SERIAL PRIMARY KEY,
-    method_name VARCHAR(255) NOT NULL UNIQUE
-);
-```
 
 ## 1. User Service
 
 ### Domain Model
 ```java
-@Entity
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+/**
+ * システム内のユーザーを表します。
+ */
+public class Users {
+    private Long id;
     private String name;
     private String email;
     private String password;
-    private String zipcode;
-    private String prefecture;
-    private String address;
-    private String telephone;
-    // Getters and Setters
+
+    // コンストラクタ、getter、setterは省略
 }
 
-@Entity
-public class Address {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private Integer userId;
-    private String name;
-    private String email;
+/**
+ * ユーザーに関連付けられた住所を表します。
+ */
+public class Addresses {
+    private Long id;
+    private Long userId;  // 外部キーの代わりにユーザーIDを保持
     private String zipcode;
-    private String prefecture;
     private String address;
     private String telephone;
-    // Getters and Setters
+
+    // コンストラクタ、getter、setterは省略
 }
 ```
 
@@ -198,45 +193,46 @@ public class Address {
 
 ### Domain Model
 ```java
-@Entity
-public class TopItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+/**
+ * トップスのアイテムを表します。
+ */
+public class Tops {
+    private Long id;
     private String name;
     private String description;
     private Integer price;
     private String imagePath;
-    private Boolean deleted;
-    // Getters and Setters
+
+    // コンストラクタ、getter、setterは省略
 }
 
-@Entity
-public class BottomItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+/**
+ * ボトムスのアイテムを表します。
+ */
+public class Bottoms {
+    private Long id;
     private String name;
     private String description;
     private Integer price;
     private String imagePath;
-    private Boolean deleted;
-    // Getters and Setters
+
+    // コンストラクタ、getter、setterは省略
 }
 
-@Entity
-public class Set {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private Integer topItemId;
-    private Integer bottomItemId;
+/**
+ * トップスとボトムスのセットを表します。
+ */
+public class Sets {
+    private Long id;
+    private Long topId;    // 外部キーの代わりにトップスIDを保持
+    private Long bottomId; // 外部キーの代わりにボトムスIDを保持
     private String name;
     private String description;
     private Integer price;
     private String imagePath;
-    // Getters and Setters
-}
+
+    // コンストラクタ、getter、setterは省略
+} // Getters and Setters
 ```
 
 ## 3. Inventory Service
@@ -259,38 +255,35 @@ public class Inventory {
 
 ### Domain Model
 ```java
-@Entity
-public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private Integer userId;
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+/**
+ * 注文を表します。
+ */
+public class Orders {
+    private Long id;
+    private Long userId;          // 外部キーの代わりにユーザーIDを保持
+    private Long statusId;        // 外部キーの代わりにステータスIDを保持
     private Integer totalPrice;
-    private LocalDateTime orderDate;
-    private Integer paymentMethodId;
-    private LocalDate deliveryDate;
-    private Integer addressId;
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>();
-    // Getters and Setters
+    private java.sql.Timestamp orderDate;
+    private Long paymentMethodId; // 外部キーの代わりに支払い方法IDを保持
+    private java.sql.Date deliveryDate;
+    private Long addressId;       // 外部キーの代わりに住所IDを保持
+
+    // コンストラクタ、getter、setterは省略
 }
 
 @Entity
-public class OrderItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private  Integder orderId;
-    private Integer itemId;
-    @Enumerated(EnumType.STRING)
-    private ItemType itemType;
+/**
+ * 注文内のアイテムを表します。
+ */
+public class OrderItems {
+    private Long id;
+    private Long orderId; // 外部キーの代わりに注文IDを保持
+    private Long itemId;  // アイテムIDを保持
+    private String itemType;
     private Integer quantity;
     private String size;
-    // Getters and Setters
+
+    // コンストラクタ、getter、setterは省略
 }
 
 public enum OrderStatus {
