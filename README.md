@@ -11,6 +11,8 @@ CREATE TABLE Users (
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
+    prefecture TEXT NOT NULL,
+    municipalities TEXT NOT NULL,
     address TEXT NOT NULL,
     telephone VARCHAR(20) NOT NULL
 );
@@ -267,6 +269,7 @@ public class Orders {
     private Long paymentMethodId; // 外部キーの代わりに支払い方法IDを保持
     private java.sql.Date deliveryDate;
     private Long addressId;       // 外部キーの代わりに住所IDを保持
+    private List<OrderItems> orderItems;
 
     // コンストラクタ、getter、setterは省略
 }

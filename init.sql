@@ -16,6 +16,8 @@ CREATE TABLE Users (
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
+    prefecture TEXT NOT NULL,
+    municipalities TEXT NOT NULL,
     address TEXT NOT NULL,
     telephone VARCHAR(20) NOT NULL
 );
@@ -85,12 +87,10 @@ CREATE TABLE Sets (
 );
 
 -- Insert initial data
-INSERT INTO Users (name, email, password, zipcode, address, telephone)
-VALUES
-('John Doe', 'john.doe@example.com', 'password123', '12345', '123 Main St', '123-456-7890'),
-('Jane Smith', 'jane.smith@example.com', 'password456', '67890', '456 Elm St', '987-654-3210'),
-('Alice Johnson', 'alice.johnson@example.com', 'password789', '11223', '789 Oak St', '456-789-0123');
-
+INSERT INTO Users (name, email, password, zipcode, prefecture, municipalities, address, telephone) VALUES
+('User One', 'userone@example.com', 'password1', '123-4567', 'Prefecture A', 'City X', 'Street 1', '080-1234-5678'),
+('User Two', 'usertwo@example.com', 'password2', '234-5678', 'Prefecture B', 'City Y', 'Street 2', '080-2345-6789'),
+('User Three', 'userthree@example.com', 'password3', '345-6789', 'Prefecture C', 'City Z', 'Street 3', '080-3456-7890');
 
 INSERT INTO Addresses (user_id, zipcode, address, telephone)
 VALUES
